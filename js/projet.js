@@ -24,8 +24,8 @@ function init(){
     let menuGUI = new function () {
         this.cameraxPos = 6;
         this.camerayPos = 0.1;
-        this.camerazPos =-4;
-        this.cameraZoom = -5.65;
+        this.camerazPos =-0.5;
+        this.cameraZoom = -2.6;
         this.cameraxDir = 0;
         this.camerayDir = 0;
         this.camerazDir = 0;
@@ -89,6 +89,10 @@ function init(){
 
         //1ère Lathe
         //Points de contrôle et courbe de Bézier
+        // let P0 = new THREE.Vector3(0.06, 0, 0);
+        // let P1 = new THREE.Vector3(0.03, 0.28, 0);
+        // let P2 = new THREE.Vector3(0.02, 0.28, 0);
+        // let P3 = new THREE.Vector3(0, 0.07, 0);
         let P0 = new THREE.Vector3(0.06, 0, 0);
         let P1 = new THREE.Vector3(0.03, 0.28, 0);
         let P2 = new THREE.Vector3(0.02, 0.28, 0);
@@ -103,10 +107,14 @@ function init(){
 
         //2ème Lathe
         //Points de contrôle et courbe de Bézier
-        let C0 = new THREE.Vector3(0.06, 0, 0);
-        let C1 = new THREE.Vector3(0.015, 0.23, 0);
-        let C2 = new THREE.Vector3(0.02, 0.23, 0);
-        let C3 = new THREE.Vector3(0, 0.07, 0);
+        // let C0 = new THREE.Vector3(0.06, 0, 0);
+        // let C1 = new THREE.Vector3(0.015, 0.23, 0);
+        // let C2 = new THREE.Vector3(0.02, 0.23, 0);
+        // let C3 = new THREE.Vector3(0, 0.07, 0);
+        let C0 = new THREE.Vector3(P3.x, P3.y, P3.z);
+        let C1 = new THREE.Vector3(0.02, 0.28, 0);
+        let C2 = new THREE.Vector3(0.04, 0.23, 0);
+        let C3 = new THREE.Vector3(0.06, 0, 0);
         // tracePt(scene, C0, "#FFFFFF", dimPt, true);
         // tracePt(scene, C1, "#000000", dimPt, true);
         // tracePt(scene, C2, "#008888", dimPt, true);
@@ -117,10 +125,14 @@ function init(){
 
         //3ème Lathe
         //Points de contrôle et courbe de Bézier
-        let D0 = new THREE.Vector3(0.023, 0, 0);
-        let D1 = new THREE.Vector3(0.04, 0.1, 0);
-        let D2 = new THREE.Vector3(0.04, 0.1, 0);
-        let D3 = new THREE.Vector3(-0.01, 0.10, 0);
+        // let D0 = new THREE.Vector3(0.023, 0, 0);
+        // let D1 = new THREE.Vector3(0.04, 0.1, 0);
+        // let D2 = new THREE.Vector3(0.04, 0.1, 0);
+        // let D3 = new THREE.Vector3(-0.01, 0.10, 0);
+        let D0 = new THREE.Vector3(P3.x, P3.y, P3.z);
+        let D1 = new THREE.Vector3(0.06, 0.08, 0);
+        let D2 = new THREE.Vector3(0.04, 0, 0);
+        let D3 = new THREE.Vector3(0.035, 0.0, 0);
         // tracePt(scene, D0, "#FFFFFF", dimPt, true);
         // tracePt(scene, D1, "#000000", dimPt, true);
         // tracePt(scene, D2, "#008888", dimPt, true);
