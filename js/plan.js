@@ -44,3 +44,4 @@ function TraceBezierCubique(P0, P1, P2, P3,nbPts,coul,epaiCbe){
     let BezierCubique = new THREE.Line( cbeGeometry, material );
     return (BezierCubique);
 }  // fin fonction THREE.CubicBezierCurve
+

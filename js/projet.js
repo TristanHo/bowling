@@ -1,4 +1,7 @@
 const borneVue=6;
+let coul_equip1 = "#FF0000";
+let coul_equip2 = "#0000FF";
+let trajectoire;
 
 
 function init(){
@@ -22,7 +25,7 @@ function init(){
     var gui = new dat.GUI();
 
     let menuGUI = new function () {
-        this.cameraxPos = 6;
+        this.cameraxPos = -6;
         this.camerayPos = 0.1;
         this.camerazPos =-0.5;
         this.cameraZoom = -2.6;
@@ -64,12 +67,42 @@ function init(){
     //********************************************************
     //   DEBUT SPHERE
     //********************************************************
-    let sphereGeometry = new THREE.SphereGeometry(0.108, 130, 160);
-    let sphere = surfPhong(sphereGeometry,"#FFFF00",1,true,"#FFFF00");
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
-    sphere.position.set(10, 0, 0.11);
-    scene.add(sphere);
+    const rayon_boule = 0.108;
+    const nb = 1000; //nombre points courbe sur boule
+    const epaisseur = 1000;
+
+    function PtsCbeCercle(R, nb, epaisseur,coul){
+        let points = new Array(nb+1);
+        for(var k=0;k<=nb;k++){
+            let t2=k/nb*2*Math.PI;
+            t2=t2.toPrecision(PrecisionArrondi);
+            let x0=R*Math.cos(t2);
+            let y0=R*Math.sin(t2);
+            points[k] = new THREE.Vector3(x0,y0,0);
+        }
+        let PtsCbe = new THREE.BufferGeometry().setFromPoints(points);
+        let material = new THREE.LineBasicMaterial({color:coul,linewidth:epaisseur});
+        let Cbe = new THREE.Line(PtsCbe,material);
+        return Cbe;
+    }
+    function creation_boule ( coul1 , coul2, x,y,z ) {
+        //Sphere
+        let sphereGeometry = new THREE.SphereGeometry(rayon_boule, 130, 160);
+        let sphere = surfPhong(sphereGeometry, coul1, 1, true, coul1);
+        sphere.castShadow = true;
+        sphere.receiveShadow = true;
+        sphere.position.set(x, y, z);
+        //Cercle sur boule
+        let CbeBoule = PtsCbeCercle(rayon_boule,nb,epaisseur,coul2);
+        CbeBoule.translateX(x);
+        CbeBoule.translateY(y);
+        CbeBoule.translateZ(z);
+        CbeBoule.rotateX(Math.PI/2);
+        return[sphere,CbeBoule];
+    }
+    let [boule,Cbe] = creation_boule(coul_equip1, coul_equip2,10,0,0.11);
+    scene.add(boule);
+    scene.add(Cbe);
 
     //********************************************************
     //   FIN SPHERE
@@ -142,6 +175,13 @@ function init(){
         let lathe3 = latheBez3(nbPtCB, nbePtRot, D0, D1, D2, D3, "#FFFFFF", 1, false);
 
         //Placement et affichage des lathes sur la scène
+        lathe1.castShadow = true;
+        lathe2.castShadow = true;
+        lathe3.castShadow = true;
+        lathe1.receiveShadow = true;
+        lathe2.receiveShadow = true;
+        lathe3.receiveShadow = true;
+
         lathe1.position.set(X, Y, 0.2);
         lathe1.rotation.set(-Math.PI / 2, 0, 0);
         scene.add(lathe1);
@@ -153,13 +193,28 @@ function init(){
         scene.add(lathe3);
     }
 
-    let quilles_etat = [[true,-9.3,0.45], [true,-9.3,0.15], [true,-9.3,-0.15], [true,-9.3,-0.45], [true,-9,0.3], [true,-9,0], [true,-9,-0.3], [true,-8.6,0.15], [true,-8.6,-0.15], [true,-8.3,0]];
+    function parallepipede(x,y){
+        let arete = 0.08;
+        let largSegments = 1;
+        let hautSegments = 1;
+        let profSegments = 1;
+        let geo = new THREE.BoxGeometry(arete,arete,arete,largSegments,hautSegments,profSegments);
+        let para = surfPhong(geo, "#000000", 1, true, "#000000");
+        para.castShadow = false;
+        para.position.set(x,y,0.1);
+        scene.add(para);
+    }
+    let quilles_etat = [[true,-9.3,0.45], [true,-9.3,0.15], [true,-9.3,-0.15], [true,-9.3,-0.45], [true,-9,0.3], [true,-9,0], [true,-9,-0.3], [true,-8.6,0.15], [false,-8.6,-0.15], [true,-8.3,0]];
 
     function affichage_quillles(tab){
         for(let k=0;k<tab.length;k+=1){
             if(tab[k][0] == true) {
                 creation_quille(tab[k][1], tab[k][2]);
             }
+            else{
+                parallepipede(tab[k][1], tab[k][2]);
+            }
+
         }
     }
 
@@ -207,10 +262,27 @@ function init(){
     document.getElementById("principal").appendChild(rendu.domElement);
 
     rendu.render(scene, camera);
-
+    let tps = 0;
+    let position = [10,0,0.11];
     function reAffichage() {
         setTimeout(function () {
+            if(boule) scene.remove(boule);
             posCamera();
+            position[0]+= 3;
+            position[1]++;
+            position[2]++;
+            boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
+            scene.add(boule);
+            if(tps<5){
+                reAffichage();
+                position[0]+= 3;
+                position[1]++;
+                position[2]++;
+                boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
+                scene.add(boule);
+                tps++;
+            }
+
         }, 200);
         rendu.render(scene, camera);
     }
