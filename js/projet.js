@@ -2,6 +2,7 @@ const borneVue=6;
 let coul_equip1 = "#FF0000";
 let coul_equip2 = "#0000FF";
 let trajectoire;
+let position_dep = [10,0,0.11]; //Point de départ de la boule
 
 
 function init(){
@@ -27,10 +28,10 @@ function init(){
     let menuGUI = new function () {
         this.cameraxPos = -6;
         this.camerayPos = 0.1;
-        this.camerazPos =-0.5;
-        this.cameraZoom = -2.6;
-        this.cameraxDir = 0;
-        this.camerayDir = 0;
+        this.camerazPos =-5;
+        this.cameraZoom = -6;
+        this.cameraxDir = -1.9;
+        this.camerayDir = -1.6;
         this.camerazDir = 0;
 
 
@@ -122,10 +123,6 @@ function init(){
 
         //1ère Lathe
         //Points de contrôle et courbe de Bézier
-        // let P0 = new THREE.Vector3(0.06, 0, 0);
-        // let P1 = new THREE.Vector3(0.03, 0.28, 0);
-        // let P2 = new THREE.Vector3(0.02, 0.28, 0);
-        // let P3 = new THREE.Vector3(0, 0.07, 0);
         let P0 = new THREE.Vector3(0.06, 0, 0);
         let P1 = new THREE.Vector3(0.03, 0.28, 0);
         let P2 = new THREE.Vector3(0.02, 0.28, 0);
@@ -140,10 +137,6 @@ function init(){
 
         //2ème Lathe
         //Points de contrôle et courbe de Bézier
-        // let C0 = new THREE.Vector3(0.06, 0, 0);
-        // let C1 = new THREE.Vector3(0.015, 0.23, 0);
-        // let C2 = new THREE.Vector3(0.02, 0.23, 0);
-        // let C3 = new THREE.Vector3(0, 0.07, 0);
         let C0 = new THREE.Vector3(P3.x, P3.y, P3.z);
         let C1 = new THREE.Vector3(0.02, 0.28, 0);
         let C2 = new THREE.Vector3(0.04, 0.23, 0);
@@ -158,10 +151,6 @@ function init(){
 
         //3ème Lathe
         //Points de contrôle et courbe de Bézier
-        // let D0 = new THREE.Vector3(0.023, 0, 0);
-        // let D1 = new THREE.Vector3(0.04, 0.1, 0);
-        // let D2 = new THREE.Vector3(0.04, 0.1, 0);
-        // let D3 = new THREE.Vector3(-0.01, 0.10, 0);
         let D0 = new THREE.Vector3(P3.x, P3.y, P3.z);
         let D1 = new THREE.Vector3(0.06, 0.08, 0);
         let D2 = new THREE.Vector3(0.04, 0, 0);
@@ -224,8 +213,27 @@ function init(){
     //   FIN QUILLES
     //********************************************************
 
+
     //********************************************************
-    //   DEBUT GOUTIERE
+    //   DEBUT TRAJECTOIRE
+    //********************************************************
+
+    //Trajectoire rectiligne
+    function droite(A,B){
+        let a = ((B.y-A.y) / (B.x-A.x));
+        let b = (A.y) - a*(A.x);
+        return [a,b];
+    }
+    let ptA = new THREE.Vector3(10,0,0.11);
+    let ptB = new THREE.Vector3(-8.6,-0.15,0.11);
+    let [pente,ord] = droite(ptA,ptB);
+    //********************************************************
+    //   FIN TRAJECTOIRE
+    //********************************************************
+
+
+    //********************************************************
+    //   DEBUT GOUTTIERE
     //********************************************************
     let rayon1 = 0.125;
     let rayon2 = 0.125;
@@ -251,8 +259,7 @@ function init(){
 
 
     //********************************************************
-    //   FIN GOUTIERE
-
+    //   FIN GOUTTIERE
     //********************************************************
     function posCamera(){
         camera.position.set(menuGUI.cameraxPos*testZero(menuGUI.cameraZoom),menuGUI.camerayPos*testZero(menuGUI.cameraZoom),menuGUI.camerazPos*testZero(menuGUI.cameraZoom));
@@ -262,22 +269,25 @@ function init(){
     document.getElementById("principal").appendChild(rendu.domElement);
 
     rendu.render(scene, camera);
+
+    document.getElementById("res").innerHTML += "1";
+
     let tps = 0;
-    let position = [10,0,0.11];
+    let position = position_dep;
     function reAffichage() {
         setTimeout(function () {
-            if(boule) scene.remove(boule);
+            //if(boule) scene.remove(boule);
             posCamera();
-            position[0]+= 3;
-            position[1]++;
-            position[2]++;
+            if(boule) scene.remove(boule);
+            position[0]-= 0.1;
+            position[1] = position[0]*pente + ord;
             boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
             scene.add(boule);
-            if(tps<5){
+            //document.getElementById("res").innerHTML += position[1];
+            if(tps<1){
                 reAffichage();
-                position[0]+= 3;
-                position[1]++;
-                position[2]++;
+                if(boule) scene.remove(boule);
+                position[0]-=0.1;
                 boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
                 scene.add(boule);
                 tps++;
