@@ -23,3 +23,14 @@ function testZero(x){
     return val;
 }
 
+function segment(MaScene,A,B,CoulHexa,epai){
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(A,B);
+
+    let segAB = new THREE.Line(geometry, new THREE.LineDashedMaterial
+    ({ // pas besoin de retour chariot dans le fichier js
+        color: CoulHexa,
+        linewidth: epai,
+    })); // fin variable segAB
+    return ( segAB );
+}
