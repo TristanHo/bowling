@@ -22,3 +22,4 @@ function testZero(x){
     if (parseFloat(Math.abs(x).toPrecision(PrecisionArrondi))<epsilon) val=0;
     return val;
 }
+

@@ -1,8 +1,8 @@
 const borneVue=6;
 let coul_equip1 = "#FF0000";
 let coul_equip2 = "#0000FF";
-let trajectoire;
 let position_dep = [10,0,0.11]; //Point de départ de la boule
+const ptDep = new THREE.Vector3(10,0,0.11);
 
 
 function init(){
@@ -28,7 +28,7 @@ function init(){
     let menuGUI = new function () {
         this.cameraxPos = -6;
         this.camerayPos = 0.1;
-        this.camerazPos =-5;
+        this.camerazPos =-2.6;
         this.cameraZoom = -6;
         this.cameraxDir = -1.9;
         this.camerayDir = -1.6;
@@ -102,8 +102,8 @@ function init(){
         return[sphere,CbeBoule];
     }
     let [boule,Cbe] = creation_boule(coul_equip1, coul_equip2,10,0,0.11);
-    scene.add(boule);
-    scene.add(Cbe);
+    /*scene.add(boule);
+    scene.add(Cbe);*/
 
     //********************************************************
     //   FIN SPHERE
@@ -183,7 +183,7 @@ function init(){
     }
 
     function parallepipede(x,y){
-        let arete = 0.08;
+        let arete = 0.08; //taille côté parallepipede
         let largSegments = 1;
         let hautSegments = 1;
         let profSegments = 1;
@@ -218,19 +218,90 @@ function init(){
     //   DEBUT TRAJECTOIRE
     //********************************************************
 
-    //Trajectoire rectiligne
-    function droite(A,B){
+    // //Trajectoire rectiligne
+    //     // function droite(A,B){
+    //     //     let a = ((B.y-A.y) / (B.x-A.x));
+    //     //     let b = (A.y) - a*(A.x);
+    //     //     return [a,b];
+    //     // }
+    //     // let ptA = new THREE.Vector3(10,0,0.11);
+    //     // let ptB = new THREE.Vector3(-8.6,-0.15,0.11);
+    //     // let [pente,ord] = droite(ptA,ptB);
+
+    let ptB = new THREE.Vector3(-8.6,-0.15,0.11);
+
+    let pts_position_boule = [];
+
+    //Trajectoire rectiligne (renvoie le tableau de points pour la boule)
+    function traj_droite(A,B){
         let a = ((B.y-A.y) / (B.x-A.x));
         let b = (A.y) - a*(A.x);
-        return [a,b];
+        let pas = (largPlan+1)/500; //longueur piste (+1 pour que la boule aille un peu au-delà) divisé par nbPts souhaité pour tableau de trajectoire
+        let trajectoire = [[position_dep[0],position_dep[1],position_dep[2]]];
+        for(let i = 1; i <= 500; i++){
+            let xpos = trajectoire[trajectoire.length - 1][0] - pas;
+            let ypos = xpos * a + b;
+            trajectoire.push([xpos,ypos,0.11]);
+        }
+        return trajectoire;
     }
-    let ptA = new THREE.Vector3(10,0,0.11);
-    let ptB = new THREE.Vector3(-8.6,-0.15,0.11);
-    let [pente,ord] = droite(ptA,ptB);
+
+    function choix_traj(choix,ptArrivee){
+        if(choix.toString() == "rectiligne"){
+            pts_position_boule = traj_droite(ptDep,ptArrivee);
+        }
+        if(choix == "Bezier"){
+            //pts_position_boule = pts2CbeBez(ptDep,cbe1pc1,cbe1pc2,joint,cbe2pc1,cbe2pc2);
+        }
+    }
     //********************************************************
     //   FIN TRAJECTOIRE
     //********************************************************
 
+    //********************************************************
+    //   DEBUT JOUER PARTIE
+    //********************************************************
+    let jeu = false;
+    let tir = 0; //4 tirs max dans la partie
+    let score_eq = 0;
+    let choix_test = "rectiligne";
+    //mettre en place sur bouton gui "lancer" la fonction jouer
+    function jouer(choix,ptArrivee,boule,quilles_etat){
+        if(tir < 4) {
+            choix_traj(choix, ptArrivee);
+            jeu = true;
+            let score = 0; //compter les chutes de quille
+            // while (jeu) {
+            //     reAffichage();
+            //     //verif_quilles(boule,quilles_etat); qui pourait renvoyer le score
+            // }
+            //ajustement des scores
+            if(score == 10) {
+                tir = 2; //si strike
+                score_eq = 30;
+            }
+            else{
+                if(score == 5){
+                    score_eq = 15;
+                    tir++;
+                }
+                else{
+                    score_eq = score;
+                    tir++;
+                }
+            }
+            //actualisation_scores(id de l'équipe actuelle);
+            /*
+            if(tir%2 == 0)
+                reset(); //remise en place de la piste initiale
+                switch_team(); //changer les couleurs, l'id d'écriture du score, etc
+             */
+        }
+    }
+
+    //********************************************************
+    //   FIN JOUER PARTIE
+    //********************************************************
 
     //********************************************************
     //   DEBUT GOUTTIERE
@@ -270,29 +341,57 @@ function init(){
 
     rendu.render(scene, camera);
 
-    document.getElementById("res").innerHTML += "1";
+    document.getElementById("res").innerHTML += (traj_droite(ptDep,ptB)).toString();
 
-    let tps = 0;
-    let position = position_dep;
+    let k = 0;
+    pts_position_boule = traj_droite(ptDep,ptB);
+    //jouer(choix_test,0,ptB,boule,quilles_etat);
     function reAffichage() {
         setTimeout(function () {
-            //if(boule) scene.remove(boule);
             posCamera();
-            if(boule) scene.remove(boule);
-            position[0]-= 0.1;
-            position[1] = position[0]*pente + ord;
-            boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
-            scene.add(boule);
+            //if(boule) scene.remove(boule);
+            // if(boule) scene.remove(boule);
+            // if(Cbe) scene.remove(Cbe);
+            // position[0]-= 0.2;
+            // position[1] = position[0]*pente + ord;
+            // [boule,Cbe] = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2]);
+            // scene.add(boule);
+            // scene.add(Cbe);
             //document.getElementById("res").innerHTML += position[1];
-            if(tps<1){
+            // if(tps<20){
+            //     reAffichage();
+            //     if(boule) scene.remove(boule);
+            //     if(Cbe) scene.remove(Cbe);
+            //     position[0]-=0.2;
+            //     [boule,Cbe] = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2]);
+            //     scene.add(boule);
+            //     scene.add(Cbe);
+            //     tps++;
+            // }
+            if (boule) scene.remove(boule);
+            if (Cbe) scene.remove(Cbe);
+            let coordx = pts_position_boule[k][0];
+            let coordy = pts_position_boule[k][1];
+            let coordz = 0.11;
+            [boule, Cbe] = creation_boule(coul_equip1, coul_equip2, coordx, coordy, coordz);
+            scene.add(boule);
+            scene.add(Cbe);
+            if(k<pts_position_boule.length /*& jeu*/) {
+                //if (boule) scene.remove(boule);
+                //if (Cbe) scene.remove(Cbe);
+                k++;
                 reAffichage();
-                if(boule) scene.remove(boule);
-                position[0]-=0.1;
-                boule = creation_boule(coul_equip1,coul_equip2,position[0],position[1],position[2])[0];
-                scene.add(boule);
-                tps++;
             }
-
+            /*else{
+                if (boule) scene.remove(boule);
+                if (Cbe) scene.remove(Cbe);
+                let coordx = pts_position_boule[k][0];
+                let coordy = pts_position_boule[k][1];
+                let coordz = 0.11;
+                [boule, Cbe] = creation_boule(coul_equip1, coul_equip2, coordx, coordy, coordz);
+                scene.add(boule);
+                scene.add(Cbe);
+            }*/
         }, 200);
         rendu.render(scene, camera);
     }
