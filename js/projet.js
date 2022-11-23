@@ -296,15 +296,17 @@ function init(){
         let R_lim = R_quilles + rayon_boule;
         let cpt = 0;
         for(let i = 0;i < quilles_etat.length;i++){
-            if(quilles_etat[i][0] == true){
-                let xq = quilles_etat[i][1];
-                let yq = quilles_etat[i][2];
-                let Lx = xq - x;
-                let Ly = yq - y;
-                let d = Math.sqrt(Lx*Lx + Ly*Ly);
-                if(d <= R_lim){
-                    quilles_etat[i][0] = false;
-                    cpt += 1;
+            if(y<=0.650-0.025 && y >=-0.650+0.025) {
+                if (quilles_etat[i][0] == true) {
+                    let xq = quilles_etat[i][1];
+                    let yq = quilles_etat[i][2];
+                    let Lx = xq - x;
+                    let Ly = yq - y;
+                    let d = Math.sqrt(Lx * Lx + Ly * Ly);
+                    if (d <= R_lim) {
+                        quilles_etat[i][0] = false;
+                        cpt += 1;
+                    }
                 }
             }
         }
@@ -319,16 +321,6 @@ function init(){
     //********************************************************
     //   DEBUT TRAJECTOIRE
     //********************************************************
-
-    // //Trajectoire rectiligne
-    //     // function droite(A,B){
-    //     //     let a = ((B.y-A.y) / (B.x-A.x));
-    //     //     let b = (A.y) - a*(A.x);
-    //     //     return [a,b];
-    //     // }
-    //     // let ptA = new THREE.Vector3(10,0,0.11);
-    //     // let ptB = new THREE.Vector3(-8.6,-0.15,0.11);
-    //     // let [pente,ord] = droite(ptA,ptB);
 
     let ptB = new THREE.Vector3(-8.6,-1,0.11);
 
@@ -347,7 +339,6 @@ function init(){
         for(let i = 1; i <= nbPtstab; i++){
             let xpos = trajectoire[trajectoire.length - 1][0] - pas;
             let ypos = xpos * a + b;
-            let zpos = 0.11;
             if(ypos > lim_gout_pos){
                 if(ypos>=0.650){
                     ypos = 0.650;
@@ -389,7 +380,7 @@ function init(){
             if(Cbe) scene.remove(Cbe);
             let coordx = pts_position_boule[k][0];
             let coordy = pts_position_boule[k][1];
-            let coordz = 0.11;
+            let coordz = pts_position_boule[k][2];
             [boule, Cbe] = creation_boule(coul_equip1, coul_equip2, coordx, coordy, coordz);
             score = verif_quilles(coordx,coordy);
             if(score != 0){
