@@ -2,8 +2,12 @@ const borneVue=6;
 let coul_equip1 = "#FF0000";
 let coul_equip2 = "#0000FF";
 let position_dep = [10,0,0.11]; //Point de départ de la boule
-const ptDep = new THREE.Vector3(10,0,0.11);
-
+let ptDep = new THREE.Vector3(10,0,0.11);
+let tir = 2;
+let mene = 0;
+let score_tir = 0;
+let score_eq_courante = 0;
+let indice_dep = 0;
 
 function init(){
     var stats = initStats();
@@ -19,7 +23,7 @@ function init(){
     lumiere(scene);
     repere(scene);
     let segmentrac ;
-
+    document.getElementById("res").innerHTML += tir.toString() + " coucoutest ";
     //********************************************************
     //  DEBUT MENU GUI
     //********************************************************
@@ -48,10 +52,8 @@ function init(){
                     //pts_position_boule = traj_droite(ptDep,ptArrivee);
                 }
                 //faire lancer en donnant le bon tableau
-                k = 0
                 lancerpos(pts_position_boule);
-
-
+                if (segmentrac) scene.remove(segmentrac);
             }
         }
 
@@ -85,7 +87,7 @@ function init(){
 
     });
     guiJeu.add(menuGUI,"lancer");
-    menuGUI.lancer();
+    //menuGUI.lancer();
 
     gui.add(menuGUI, "actualisation");
     menuGUI.actualisation();
@@ -121,12 +123,12 @@ function init(){
 
     function PtsCbeCercle(R, nb, epaisseur,coul){
         let points = new Array(nb+1);
-        for(var k=0;k<=nb;k++){
-            let t2=k/nb*2*Math.PI;
+        for(var i=0;i<=nb;i++){
+            let t2=i/nb*2*Math.PI;
             t2=t2.toPrecision(PrecisionArrondi);
             let x0=R*Math.cos(t2);
             let y0=R*Math.sin(t2);
-            points[k] = new THREE.Vector3(x0,y0,0);
+            points[i] = new THREE.Vector3(x0,y0,0);
         }
         let PtsCbe = new THREE.BufferGeometry().setFromPoints(points);
         let material = new THREE.LineBasicMaterial({color:coul,linewidth:epaisseur});
@@ -275,17 +277,17 @@ function init(){
     let tab_quilles = [quille1,quille2,quille3,quille4,quille5,quille6,quille7,quille8,quille9,quille10];
 
     function affichage_quilles(){
-        for (let k=0;k<tab_quilles.length;k++){
-            if(tab_quilles[k]){
-                scene.remove(tab_quilles[k]);
+        for (let i=0;i<tab_quilles.length;i++){
+            if(tab_quilles[i]){
+                scene.remove(tab_quilles[i]);
             }
-            if(quilles_etat[k][0] == true){
-                tab_quilles[k] = creation_quille(quilles_etat[k][1],quilles_etat[k][2],true);
+            if(quilles_etat[i][0] == true){
+                tab_quilles[i] = creation_quille(quilles_etat[i][1],quilles_etat[i][2],true);
             }
             else{
-                tab_quilles[k] = creation_quille(quilles_etat[k][1],quilles_etat[k][2],false);
+                tab_quilles[i] = creation_quille(quilles_etat[i][1],quilles_etat[i][2],false);
             }
-            scene.add(tab_quilles[k]);
+            scene.add(tab_quilles[i]);
         }
     }
 
@@ -306,6 +308,7 @@ function init(){
                     if (d <= R_lim) {
                         quilles_etat[i][0] = false;
                         cpt += 1;
+                        score_tir += 1;
                     }
                 }
             }
@@ -371,16 +374,16 @@ function init(){
     //   DEBUT Lancer
     //********************************************************
     function lancerpos(pts_position_boule){
-        setTimeout(function () {
+        let timer = setTimeout(function () {
             //document.getElementById("res").innerHTML += pts_position_boule;
             //document.getElementById("res").innerHTML += 2;
             let score = 0;
             posCamera();
             if(boule) scene.remove(boule);
             if(Cbe) scene.remove(Cbe);
-            let coordx = pts_position_boule[k][0];
-            let coordy = pts_position_boule[k][1];
-            let coordz = pts_position_boule[k][2];
+            let coordx = pts_position_boule[indice_dep][0];
+            let coordy = pts_position_boule[indice_dep][1];
+            let coordz = pts_position_boule[indice_dep][2];
             [boule, Cbe] = creation_boule(coul_equip1, coul_equip2, coordx, coordy, coordz);
             score = verif_quilles(coordx,coordy);
             if(score != 0){
@@ -388,14 +391,20 @@ function init(){
             }
             scene.add(boule);
             scene.add(Cbe);
-            if(k<pts_position_boule.length /*& jeu*/) {
+            if(indice_dep<pts_position_boule.length /*& jeu*/) {
                 //if (boule) scene.remove(boule);
                 //if (Cbe) scene.remove(Cbe);
-                k+=1;
+                indice_dep+=1;
                 lancerpos(pts_position_boule);
             }
         }, 25);
         rendu.render(scene, camera);
+        if(indice_dep == pts_position_boule.length){
+            clearTimeout(timer);
+            score();
+            reset_tir();
+            indice_dep = 0;
+        }
     }
     //********************************************************
     //   FIN PLAN Lancer
@@ -404,42 +413,76 @@ function init(){
     //********************************************************
     //   DEBUT JOUER PARTIE
     //********************************************************
-    let jeu = false;
-    let tir = 0; //4 tirs max dans la partie
-    let score_eq = 0;
-    let choix_test = "rectiligne";
-    //mettre en place sur bouton gui "lancer" la fonction jouer
-    function jouer(choix,ptArrivee,boule,quilles_etat){
-        if(tir < 4) {
-            choix_traj(choix, ptArrivee);
-            jeu = true;
-            let score = 0; //compter les chutes de quille
-            // while (jeu) {
-            //     reAffichage();
-            //     //verif_quilles(boule,quilles_etat); qui pourait renvoyer le score
-            // }
-            //ajustement des scores
-            if(score == 10) {
-                tir = 2; //si strike
-                score_eq = 30;
+    function reset_tir(){
+        let fin_partie = false;
+        if(tir == 0){
+            mene += 1;
+            fin_partie = fin();
+            let temp = coul_equip1;
+            coul_equip1 = coul_equip2;
+            coul_equip2 = temp;
+            tir = 2;
+            score_eq_courante = 0;
+            for(let i=0;i<quilles_etat.length;i++){
+                quilles_etat[i][0] = true;
             }
-            else{
-                if(score == 5){
-                    score_eq = 15;
-                    tir++;
-                }
-                else{
-                    score_eq = score;
-                    tir++;
-                }
-            }
-            //actualisation_scores(id de l'équipe actuelle);
-            /*
-            if(tir%2 == 0)
-                reset(); //remise en place de la piste initiale
-                switch_team(); //changer les couleurs, l'id d'écriture du score, etc
-             */
+            affichage_quilles();
         }
+        pts_position_boule = [];
+        if(boule) scene.remove(boule);
+        if(Cbe) scene.remove(Cbe);
+        if(!fin_partie){
+            [boule,Cbe] = creation_boule(coul_equip1, coul_equip2, position_dep[0],position_dep[1],position_dep[2]);
+            scene.add(boule);
+            scene.add(Cbe);
+        }
+    }
+    function score(){
+        if(tir == 2 && score_tir == 10){
+            score_eq_courante = 30;
+            tir = 0;
+        }
+        else if(tir == 1 && score_tir == 10){
+            score_eq_courante = 15;
+            tir = 0;
+        }
+        else {
+            score_eq_courante += score_tir;
+            tir -= 1;
+        }
+        if(mene == 0){
+            document.getElementById("reseq1_1").innerHTML = score_eq_courante.toString();
+        }
+        if(mene == 2){
+            document.getElementById("reseq1_2").innerHTML = score_eq_courante.toString();
+        }
+        if(mene == 1){
+            document.getElementById("reseq2_1").innerHTML = score_eq_courante.toString();
+        }
+        if(mene == 3){
+            document.getElementById("reseq2_2").innerHTML = score_eq_courante.toString();
+        }
+        document.getElementById("tot1").innerHTML = parseInt(document.getElementById("reseq1_1").innerHTML)  + parseInt(document.getElementById("reseq1_2").innerHTML);
+        document.getElementById("tot2").innerHTML = parseInt(document.getElementById("reseq2_1").innerHTML)  + parseInt(document.getElementById("reseq2_2").innerHTML);
+        score_tir = 0;
+    }
+    function fin(){
+        let bool = false;
+        if(mene == 4){
+            bool = true;
+            let score_eq1 = parseInt(document.getElementById("tot1").innerHTML);
+            let score_eq2 = parseInt(document.getElementById("tot2").innerHTML);
+            if( score_eq1 > score_eq2) {
+                document.getElementById("res").innerHTML = " L'équipe 1 a gagné " + score_eq1.toString() +" à " + score_eq2.toString() + " !";
+            }
+            else if(score_eq1 <score_eq2) {
+                document.getElementById("res").innerHTML = " L'équipe 2 a gagné " + score_eq2.toString() +" à " + score_eq1.toString() + " !";
+            }
+            else {
+                document.getElementById("res").innerHTML = " Les 2 équipes sont ex-aeqo !";
+            }
+        }
+        return bool;
     }
 
     //********************************************************
@@ -459,7 +502,8 @@ function init(){
     let thetaLg =  Math.PI;
     let CylConeGeom = new THREE.CylinderGeometry(rayon1, rayon2, hauteur, nbePtsCercle, nbePtsGenera, bolOuvert, theta0, thetaLg);
     let goutiereD = new surfPhong(CylConeGeom, "#FFFF00", 1, true, "#FFFF00");
-    let goutiereG = new surfPhong(CylConeGeom, "#FFFF00", 1, true, "#FFFF00");
+    //let goutiereG = new surfPhong(CylConeGeom, "#FFFF00", 1, true, "#FFFF00");
+    let goutiereG = goutiereD.clone();
     goutiereD.receiveShadow= true;
     goutiereD.castShadow = true;
     goutiereG.receiveShadow= true;
@@ -486,8 +530,8 @@ function init(){
 
     //document.getElementById("res").innerHTML += (traj_droite(ptDep,ptB)).toString();
 
-    let k = 0;
-    pts_position_boule = traj_droite(ptDep,ptB);
+    //let k = 0;
+    //pts_position_boule = traj_droite(ptDep,ptB);
     //jouer(choix_test,0,ptB,boule,quilles_etat);
     function reAffichage() {
         setTimeout(function () {

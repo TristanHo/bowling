@@ -11,3 +11,35 @@ body {
     height:95%;*/
     background-color:white;
 }
+table{
+    border-collapse: collapse;
+    text-align: center;
+}
+td,th{
+    width: 70px;
+}
+.eq{
+    border-style: solid;
+    border-right-style: none;
+    border-color: black;
+}
+.mene{
+    border-style: solid;
+    border-bottom-style: none;
+    border-color: black;
+}
+.norm{
+    border-style: solid;
+    border-collapse: collapse;
+    border-color: black;
+}
+.eq1{
+    border-style: solid;
+    color: #FF0000;
+    border-color : #0000FF;
+}
+.eq2{
+    border-style: solid;
+    color: #0000FF;
+    border-color : #FF0000;
+}
