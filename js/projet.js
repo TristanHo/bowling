@@ -308,12 +308,34 @@ function init(){
                     if (d <= R_lim) {
                         quilles_etat[i][0] = false;
                         cpt += 1;
-                        score_tir += 1;
+                        score_tir += 1 + chute_quille(x,y,xq,yq);
                     }
                 }
             }
         }
         return cpt;
+    }
+
+    function chute_quille(xb,yb,xq,yq){
+        let hauteur_quilles = 0.38;
+        let pente = (yq-yb)/(xq-xb);
+        let ord = yb - pente*xb;
+        for(let i = 0; i < quilles_etat.length;i++){
+            if (quilles_etat[i][0] == true && (quilles_etat[i][1] != xb && quilles_etat[i][2] != yb)) {
+                let x2 = quilles_etat[i][1];
+                let y2 = quilles_etat[i][2];
+                let Lx = x2 - xq;
+                let Ly = y2- yq;
+                let d = Math.sqrt(Lx * Lx + Ly * Ly);
+                if(i = 0)
+                    document.getElementById("res").innerHTML +=  (x2*pente+ord).toString() + " = calc eq et y = " + y2.toString() + " // ";
+                if(d <= hauteur_quilles && ((x2*pente + ord) == y2)){
+                    quilles_etat[i][0] = false;
+                    return 1 + chute_quille(xb,yb,x2,y2);
+                }
+            }
+        }
+        return 0;
     }
 
     //********************************************************
