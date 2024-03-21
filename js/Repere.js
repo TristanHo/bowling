@@ -4,14 +4,26 @@ function vecteur(MaScene,A,B,CoulHexa,longCone,RayonCone){
     MaScene.add( new THREE.ArrowHelper( vecAB, A, B.distanceTo(A), CoulHexa, longCone, RayonCone ));
 }
 
+function segment(MaScene,A,B,CoulHexa,epai){
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(A,B);
+
+    let segAB = new THREE.Line(geometry, new THREE.LineDashedMaterial
+    ({
+        color: CoulHexa,
+        linewidth: epai,
+    }));
+    return ( segAB );
+}
+
 function repere(MaScene){
     var PointO3 = new THREE.Vector3( 0,0,0 );
     var vecI = new THREE.Vector3( 1, 0, 0 );
     var vecJ = new THREE.Vector3( 0, 1, 0 );
     var vecK = new THREE.Vector3( 0, 0, 1 );
-    vecteur(MaScene,PointO3,vecI, 0xFF0000, 0.25, 0.125 );
-    vecteur(MaScene,PointO3,vecJ, 0x00FF00, 0.25, 0.125 );
-    vecteur(MaScene,PointO3,vecK, 0x0000FF, 0.25, 0.125 );
+    vecteur(MaScene,PointO3,vecI, 0x000000, 0.25, 0.125 ); //axe des x
+    vecteur(MaScene,PointO3,vecJ, 0x0000FF, 0.25, 0.125 ); //axe des y
+    vecteur(MaScene,PointO3,vecK, 0x0000FF, 0.25, 0.125 ); //axe des z
 }
 
 const PrecisionArrondi=50;
@@ -23,14 +35,3 @@ function testZero(x){
     return val;
 }
 
-function segment(MaScene,A,B,CoulHexa,epai){
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(A,B);
-
-    let segAB = new THREE.Line(geometry, new THREE.LineDashedMaterial
-    ({ // pas besoin de retour chariot dans le fichier js
-        color: CoulHexa,
-        linewidth: epai,
-    })); // fin variable segAB
-    return ( segAB );
-}
